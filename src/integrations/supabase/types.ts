@@ -9,7 +9,121 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      deployments: {
+        Row: {
+          build_logs: string | null
+          commit_hash: string | null
+          completed_at: string | null
+          deploy_logs: string | null
+          id: string
+          server_id: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["deployment_status"] | null
+          version: string | null
+        }
+        Insert: {
+          build_logs?: string | null
+          commit_hash?: string | null
+          completed_at?: string | null
+          deploy_logs?: string | null
+          id?: string
+          server_id: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["deployment_status"] | null
+          version?: string | null
+        }
+        Update: {
+          build_logs?: string | null
+          commit_hash?: string | null
+          completed_at?: string | null
+          deploy_logs?: string | null
+          id?: string
+          server_id?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["deployment_status"] | null
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deployments_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_logs: {
+        Row: {
+          id: string
+          level: string
+          message: string
+          server_id: string
+          timestamp: string | null
+        }
+        Insert: {
+          id?: string
+          level: string
+          message: string
+          server_id: string
+          timestamp?: string | null
+        }
+        Update: {
+          id?: string
+          level?: string
+          message?: string
+          server_id?: string
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_logs_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      servers: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          environment_variables: Json | null
+          id: string
+          name: string
+          port: number
+          repository_url: string | null
+          status: Database["public"]["Enums"]["server_status"] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          environment_variables?: Json | null
+          id?: string
+          name: string
+          port: number
+          repository_url?: string | null
+          status?: Database["public"]["Enums"]["server_status"] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          environment_variables?: Json | null
+          id?: string
+          name?: string
+          port?: number
+          repository_url?: string | null
+          status?: Database["public"]["Enums"]["server_status"] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +132,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      deployment_status:
+        | "pending"
+        | "building"
+        | "deploying"
+        | "running"
+        | "failed"
+        | "stopped"
+      server_status: "running" | "stopped" | "creating" | "error"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +254,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      deployment_status: [
+        "pending",
+        "building",
+        "deploying",
+        "running",
+        "failed",
+        "stopped",
+      ],
+      server_status: ["running", "stopped", "creating", "error"],
+    },
   },
 } as const

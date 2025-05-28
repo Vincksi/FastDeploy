@@ -1,59 +1,90 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Play, Code, Server, Terminal, Coffee, Zap, Settings, Monitor } from 'lucide-react';
+import { Play, Code, Server, Terminal, Coffee, Zap, Settings, Monitor, LogIn } from 'lucide-react';
 import TerminalWindow from './TerminalWindow';
 import FloatingCodeSnippets from './FloatingCodeSnippets';
 import ServerCard from './ServerCard';
-
-interface Server {
-  id: number;
-  name: string;
-  status: 'running' | 'stopped' | 'creating';
-  port: number;
-  uptime: string;
-}
+import { useServers } from '@/hooks/useServers';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
-  const [servers, setServers] = useState<Server[]>([
-    { id: 1, name: 'User API', status: 'running', port: 8000, uptime: '2h 34m' },
-    { id: 2, name: 'Product API', status: 'stopped', port: 8001, uptime: '0m' },
-    { id: 3, name: 'Analytics API', status: 'running', port: 8002, uptime: '1h 12m' },
-  ]);
-
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [user, setUser] = useState<any>(null);
+  const { servers, loading, createServer } = useServers();
+  const { toast } = useToast();
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  const createNewAPI = () => {
-    const newServer: Server = {
-      id: servers.length + 1,
+  useEffect(() => {
+    // Check authentication status
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleCreateAPI = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to create servers",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    await createServer({
       name: `API-${servers.length + 1}`,
-      status: 'creating' as const,
-      port: 8000 + servers.length,
-      uptime: '0m'
-    };
-    setServers([...servers, newServer]);
-    
-    // Simulate creation process
-    setTimeout(() => {
-      setServers(prev => 
-        prev.map(s => s.id === newServer.id ? { ...s, status: 'running' as const } : s)
-      );
-    }, 3000);
+      description: 'Auto-generated FastAPI server'
+    });
   };
 
-  const toggleServer = (id: number) => {
-    setServers(servers.map(server => 
-      server.id === id 
-        ? { ...server, status: server.status === 'running' ? 'stopped' as const : 'running' as const }
-        : server
-    ));
+  const handleLogin = async () => {
+    window.location.href = '/auth';
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-cyber-gradient relative overflow-hidden flex items-center justify-center">
+        <FloatingCodeSnippets />
+        
+        <Card className="glass-panel border-cyber-primary/30 w-full max-w-md mx-4">
+          <CardHeader className="text-center">
+            <CardTitle className="text-cyber-primary flex items-center justify-center space-x-2">
+              <Terminal className="h-6 w-6" />
+              <span>FastAPI Control Center</span>
+            </CardTitle>
+            <CardDescription className="text-cyber-primary/70">
+              Please log in to manage your FastAPI servers
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={handleLogin}
+              className="w-full cyber-button text-lg py-6"
+            >
+              <LogIn className="h-5 w-5 mr-2" />
+              Login / Sign Up
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-cyber-gradient relative overflow-hidden">
@@ -77,9 +108,17 @@ const Dashboard = () => {
               <Coffee className="h-4 w-4" />
               <span>{currentTime.toLocaleTimeString()}</span>
             </div>
-            <Button variant="outline" size="sm" className="cyber-button">
+            <div className="text-sm text-cyber-primary/80">
+              Welcome, {user.email}
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="cyber-button"
+              onClick={() => supabase.auth.signOut()}
+            >
               <Settings className="h-4 w-4 mr-2" />
-              Settings
+              Logout
             </Button>
           </div>
         </div>
@@ -101,8 +140,9 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <Button 
-                onClick={createNewAPI}
+                onClick={handleCreateAPI}
                 className="w-full cyber-button text-lg py-6"
+                disabled={loading}
               >
                 <Zap className="h-5 w-5 mr-2" />
                 Create New API
@@ -152,16 +192,18 @@ const Dashboard = () => {
           <div>
             <h2 className="text-xl font-semibold text-cyber-primary mb-4 flex items-center">
               <Server className="h-5 w-5 mr-2" />
-              Active Servers
+              Active Servers ({servers.length})
             </h2>
             <div className="space-y-4">
-              {servers.map((server) => (
-                <ServerCard 
-                  key={server.id} 
-                  server={server} 
-                  onToggle={() => toggleServer(server.id)}
-                />
-              ))}
+              {loading ? (
+                <div className="text-cyber-primary/70">Loading servers...</div>
+              ) : servers.length === 0 ? (
+                <div className="text-cyber-primary/70">No servers created yet. Click "Create New API" to get started!</div>
+              ) : (
+                servers.map((server) => (
+                  <ServerCard key={server.id} server={server} />
+                ))
+              )}
             </div>
           </div>
 
