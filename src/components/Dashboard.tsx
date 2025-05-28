@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,8 +7,16 @@ import TerminalWindow from './TerminalWindow';
 import FloatingCodeSnippets from './FloatingCodeSnippets';
 import ServerCard from './ServerCard';
 
+interface Server {
+  id: number;
+  name: string;
+  status: 'running' | 'stopped' | 'creating';
+  port: number;
+  uptime: string;
+}
+
 const Dashboard = () => {
-  const [servers, setServers] = useState([
+  const [servers, setServers] = useState<Server[]>([
     { id: 1, name: 'User API', status: 'running', port: 8000, uptime: '2h 34m' },
     { id: 2, name: 'Product API', status: 'stopped', port: 8001, uptime: '0m' },
     { id: 3, name: 'Analytics API', status: 'running', port: 8002, uptime: '1h 12m' },
@@ -23,10 +30,10 @@ const Dashboard = () => {
   }, []);
 
   const createNewAPI = () => {
-    const newServer = {
+    const newServer: Server = {
       id: servers.length + 1,
       name: `API-${servers.length + 1}`,
-      status: 'creating',
+      status: 'creating' as const,
       port: 8000 + servers.length,
       uptime: '0m'
     };
@@ -35,7 +42,7 @@ const Dashboard = () => {
     // Simulate creation process
     setTimeout(() => {
       setServers(prev => 
-        prev.map(s => s.id === newServer.id ? { ...s, status: 'running' } : s)
+        prev.map(s => s.id === newServer.id ? { ...s, status: 'running' as const } : s)
       );
     }, 3000);
   };
@@ -43,7 +50,7 @@ const Dashboard = () => {
   const toggleServer = (id: number) => {
     setServers(servers.map(server => 
       server.id === id 
-        ? { ...server, status: server.status === 'running' ? 'stopped' : 'running' }
+        ? { ...server, status: server.status === 'running' ? 'stopped' as const : 'running' as const }
         : server
     ));
   };
