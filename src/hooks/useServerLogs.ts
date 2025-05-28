@@ -1,6 +1,10 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
+
+// Use the database type directly to ensure compatibility
+type ServerLogRow = Database['public']['Tables']['server_logs']['Row'];
 
 export interface ServerLog {
   id: string;
@@ -29,7 +33,10 @@ export const useServerLogs = (serverId?: string) => {
           filter: serverId ? `server_id=eq.${serverId}` : undefined
         },
         (payload) => {
-          setLogs(prev => [...prev, payload.new as ServerLog].slice(-50)); // Keep last 50 logs
+          const newLog = transformLogRow(payload.new as ServerLogRow);
+          if (newLog) {
+            setLogs(prev => [...prev, newLog].slice(-50)); // Keep last 50 logs
+          }
         }
       )
       .subscribe();
@@ -38,6 +45,21 @@ export const useServerLogs = (serverId?: string) => {
       supabase.removeChannel(channel);
     };
   }, [serverId]);
+
+  const transformLogRow = (row: ServerLogRow): ServerLog | null => {
+    // Type guard to ensure level is valid
+    if (!['INFO', 'ERROR', 'WARNING', 'SUCCESS'].includes(row.level)) {
+      return null;
+    }
+    
+    return {
+      id: row.id,
+      server_id: row.server_id,
+      level: row.level as 'INFO' | 'ERROR' | 'WARNING' | 'SUCCESS',
+      message: row.message,
+      timestamp: row.timestamp || new Date().toISOString()
+    };
+  };
 
   const fetchLogs = async () => {
     try {
@@ -54,7 +76,12 @@ export const useServerLogs = (serverId?: string) => {
       const { data, error } = await query;
 
       if (error) throw error;
-      setLogs(data || []);
+      
+      const transformedLogs = (data || [])
+        .map(transformLogRow)
+        .filter((log): log is ServerLog => log !== null);
+      
+      setLogs(transformedLogs);
     } catch (error) {
       console.error('Error fetching logs:', error);
     } finally {

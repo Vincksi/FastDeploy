@@ -2,6 +2,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { Database } from '@/integrations/supabase/types';
+
+// Use the database type directly to ensure compatibility
+type ServerRow = Database['public']['Tables']['servers']['Row'];
 
 export interface Server {
   id: string;
@@ -44,6 +48,20 @@ export const useServers = () => {
     };
   }, []);
 
+  const transformServerRow = (row: ServerRow): Server => {
+    return {
+      id: row.id,
+      name: row.name,
+      description: row.description || undefined,
+      status: row.status || 'stopped',
+      port: row.port,
+      repository_url: row.repository_url || undefined,
+      environment_variables: row.environment_variables as Record<string, any> || {},
+      created_at: row.created_at || new Date().toISOString(),
+      updated_at: row.updated_at || new Date().toISOString()
+    };
+  };
+
   const fetchServers = async () => {
     try {
       const { data, error } = await supabase
@@ -52,7 +70,9 @@ export const useServers = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setServers(data || []);
+      
+      const transformedServers = (data || []).map(transformServerRow);
+      setServers(transformedServers);
     } catch (error) {
       console.error('Error fetching servers:', error);
       toast({
