@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 const Dashboard = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [user, setUser] = useState<any>(null);
+  const [showGenerator, setShowGenerator] = useState(false);
   const { servers, loading, createServer } = useServers();
   const { toast } = useToast();
 
@@ -48,10 +49,11 @@ const Dashboard = () => {
       return;
     }
 
-    await createServer({
-      name: `API-${servers.length + 1}`,
-      description: 'Auto-generated FastAPI server'
-    });
+    setShowGenerator(true);
+  };
+
+  const handleGeneratorClose = () => {
+    setShowGenerator(false);
   };
 
   const handleLogin = async () => {
@@ -83,6 +85,65 @@ const Dashboard = () => {
             </Button>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  if (showGenerator) {
+    return (
+      <div className="min-h-screen bg-cyber-gradient relative overflow-hidden">
+        <FloatingCodeSnippets />
+        
+        {/* Header */}
+        <header className="relative z-10 p-6 border-b border-cyber-primary/20">
+          <div className="flex justify-between items-center max-w-7xl mx-auto">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Terminal className="h-8 w-8 text-cyber-primary animate-glow" />
+                <h1 className="text-2xl font-bold neon-text">FastAPI Control Center</h1>
+              </div>
+              <Badge variant="outline" className="border-cyber-primary text-cyber-primary animate-pulse-glow">
+                v2.1.0
+              </Badge>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="cyber-button"
+                onClick={handleGeneratorClose}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Back to Dashboard
+              </Button>
+              <div className="text-sm text-cyber-primary/80">
+                Welcome, {user.email}
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="cyber-button"
+                onClick={() => supabase.auth.signOut()}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        {/* FastAPI Generator */}
+        <main className="p-6 max-w-7xl mx-auto relative z-10">
+          <FastAPIGenerator onGenerated={handleGeneratorClose} />
+        </main>
+
+        {/* Ambient Effects */}
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyber-primary/5 rounded-full blur-3xl animate-pulse-glow"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyber-secondary/5 rounded-full blur-3xl animate-pulse-glow"></div>
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-cyber-tertiary/5 rounded-full blur-3xl animate-pulse-glow"></div>
+        </div>
       </div>
     );
   }
