@@ -101,6 +101,18 @@ const FastAPIGenerator = ({ onGenerated }: FastAPIGeneratorProps) => {
     setIsGenerating(true);
 
     try {
+      // Get the current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        toast({
+          title: "Error", 
+          description: "You must be logged in to create a server",
+          variant: "destructive"
+        });
+        return;
+      }
+
       // First create the server entry
       const { data: server, error: serverError } = await supabase
         .from('servers')
@@ -108,7 +120,8 @@ const FastAPIGenerator = ({ onGenerated }: FastAPIGeneratorProps) => {
           name: config.name,
           description: config.description,
           port: 8000,
-          status: 'creating'
+          status: 'creating',
+          user_id: user.id
         })
         .select()
         .single();
