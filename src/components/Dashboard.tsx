@@ -1,14 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Play, Code, Server, Terminal, Coffee, Zap, Settings, Monitor, LogIn, X } from 'lucide-react';
+import { Play, Code, Server, Terminal, Coffee, Zap, Settings, Monitor, LogIn, X, FileText } from 'lucide-react';
 import TerminalWindow from './TerminalWindow';
 import FloatingCodeSnippets from './FloatingCodeSnippets';
 import ServerCard from './ServerCard';
 import FastAPIGenerator from './FastAPIGenerator';
+import ConfigurationViewer from './ConfigurationViewer';
 import { useServers } from '@/hooks/useServers';
+import { useConfigurationFiles } from '@/hooks/useConfigurationFiles';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -16,7 +17,10 @@ const Dashboard = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [user, setUser] = useState<any>(null);
   const [showGenerator, setShowGenerator] = useState(false);
+  const [showConfigViewer, setShowConfigViewer] = useState(false);
+  const [selectedServerConfig, setSelectedServerConfig] = useState<any>(null);
   const { servers, loading, createServer } = useServers();
+  const { generateConfigFiles } = useConfigurationFiles();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -56,6 +60,36 @@ const Dashboard = () => {
     setShowGenerator(false);
   };
 
+  const handleViewConfiguration = (server: any) => {
+    // Generate example configuration for the server
+    const exampleConfig = {
+      name: server.name,
+      description: server.description || 'Auto-generated FastAPI server',
+      endpoints: [
+        { id: '1', path: '/items', method: 'GET', description: 'Get all items' },
+        { id: '2', path: '/items', method: 'POST', description: 'Create new item' }
+      ],
+      database: {
+        enabled: true,
+        type: 'sqlite'
+      },
+      middleware: ['cors']
+    };
+
+    const configFiles = generateConfigFiles(exampleConfig);
+    setSelectedServerConfig({
+      serverId: server.id,
+      serverName: server.name,
+      configFiles
+    });
+    setShowConfigViewer(true);
+  };
+
+  const handleConfigViewerClose = () => {
+    setShowConfigViewer(false);
+    setSelectedServerConfig(null);
+  };
+
   const handleLogin = async () => {
     window.location.href = '/auth';
   };
@@ -85,6 +119,61 @@ const Dashboard = () => {
             </Button>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  if (showConfigViewer && selectedServerConfig) {
+    return (
+      <div className="min-h-screen bg-cyber-gradient relative overflow-hidden">
+        <FloatingCodeSnippets />
+        
+        {/* Header */}
+        <header className="relative z-10 p-6 border-b border-cyber-primary/20">
+          <div className="flex justify-between items-center max-w-7xl mx-auto">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Terminal className="h-8 w-8 text-cyber-primary animate-glow" />
+                <h1 className="text-2xl font-bold neon-text">FastAPI Control Center</h1>
+              </div>
+              <Badge variant="outline" className="border-cyber-primary text-cyber-primary animate-pulse-glow">
+                v2.1.0
+              </Badge>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-cyber-primary/80">
+                Welcome, {user.email}
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="cyber-button"
+                onClick={() => supabase.auth.signOut()}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        {/* Configuration Viewer */}
+        <main className="p-6 max-w-7xl mx-auto relative z-10">
+          <ConfigurationViewer
+            serverId={selectedServerConfig.serverId}
+            serverName={selectedServerConfig.serverName}
+            configFiles={selectedServerConfig.configFiles}
+            onClose={handleConfigViewerClose}
+          />
+        </main>
+
+        {/* Ambient Effects */}
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyber-primary/5 rounded-full blur-3xl animate-pulse-glow"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyber-secondary/5 rounded-full blur-3xl animate-pulse-glow"></div>
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-cyber-tertiary/5 rounded-full blur-3xl animate-pulse-glow"></div>
+        </div>
       </div>
     );
   }
@@ -263,7 +352,20 @@ const Dashboard = () => {
                 <div className="text-cyber-primary/70">No servers created yet. Click "Create New API" to get started!</div>
               ) : (
                 servers.map((server) => (
-                  <ServerCard key={server.id} server={server} />
+                  <div key={server.id} className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <ServerCard server={server} />
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewConfiguration(server)}
+                      className="ml-4 cyber-button"
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Config
+                    </Button>
+                  </div>
                 ))
               )}
             </div>
