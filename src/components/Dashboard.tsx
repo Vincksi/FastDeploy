@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import FloatingCodeSnippets from './FloatingCodeSnippets';
 import ServerCard from './ServerCard';
 import FastAPIGenerator from './FastAPIGenerator';
 import ConfigurationViewer from './ConfigurationViewer';
+import QuickLaunchModal from './QuickLaunchModal';
 import { useServers } from '@/hooks/useServers';
 import { useConfigurationFiles } from '@/hooks/useConfigurationFiles';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +20,7 @@ const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [showGenerator, setShowGenerator] = useState(false);
   const [showConfigViewer, setShowConfigViewer] = useState(false);
+  const [showQuickLaunch, setShowQuickLaunch] = useState(false);
   const [selectedServerConfig, setSelectedServerConfig] = useState<any>(null);
   const { servers, loading, createServer } = useServers();
   const { generateConfigFiles } = useConfigurationFiles();
@@ -56,8 +59,25 @@ const Dashboard = () => {
     setShowGenerator(true);
   };
 
+  const handleQuickLaunch = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to use Quick Launch",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setShowQuickLaunch(true);
+  };
+
   const handleGeneratorClose = () => {
     setShowGenerator(false);
+  };
+
+  const handleQuickLaunchClose = () => {
+    setShowQuickLaunch(false);
   };
 
   const handleViewConfiguration = (server: any) => {
@@ -143,6 +163,15 @@ const Dashboard = () => {
             </div>
             
             <div className="flex items-center space-x-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="cyber-button"
+                onClick={handleConfigViewerClose}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Back to Dashboard
+              </Button>
               <div className="text-sm text-cyber-primary/80">
                 Welcome, {user.email}
               </div>
@@ -313,7 +342,10 @@ const Dashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full bg-cyber-secondary/20 border border-cyber-secondary text-cyber-secondary hover:bg-cyber-secondary/30 text-lg py-6">
+              <Button 
+                onClick={handleQuickLaunch}
+                className="w-full bg-cyber-secondary/20 border border-cyber-secondary text-cyber-secondary hover:bg-cyber-secondary/30 text-lg py-6"
+              >
                 <Server className="h-5 w-5 mr-2" />
                 Launch Server
               </Button>
@@ -372,6 +404,15 @@ const Dashboard = () => {
           </div>
         </div>
       </main>
+
+      {/* Quick Launch Modal */}
+      <QuickLaunchModal
+        isOpen={showQuickLaunch}
+        onClose={handleQuickLaunchClose}
+        onLaunched={() => {
+          // Refresh the server list when a new server is launched
+        }}
+      />
 
       {/* Ambient Effects */}
       <div className="fixed inset-0 pointer-events-none">
