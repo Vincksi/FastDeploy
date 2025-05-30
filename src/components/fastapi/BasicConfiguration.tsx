@@ -24,6 +24,18 @@ const BasicConfiguration = ({ config, setConfig }: BasicConfigurationProps) => {
             placeholder="my-fastapi-server"
           />
         </div>
+        <div>
+          <Label htmlFor="port">Port</Label>
+          <Input
+            id="port"
+            type="number"
+            value={config.port}
+            onChange={(e) => setConfig(prev => ({ ...prev, port: parseInt(e.target.value) || 8000 }))}
+            placeholder="8000"
+            min="1"
+            max="65535"
+          />
+        </div>
         <div className="md:col-span-2">
           <Label htmlFor="description">Description</Label>
           <Textarea

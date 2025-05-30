@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Square, ExternalLink, Activity, Clock, Trash2 } from 'lucide-react';
+import { Play, Square, ExternalLink, Activity, Clock, Trash2, FileText } from 'lucide-react';
 import { useServers } from '@/hooks/useServers';
 
 interface Server {
@@ -17,9 +17,10 @@ interface Server {
 
 interface ServerCardProps {
   server: Server;
+  onViewConfiguration?: (server: Server) => void;
 }
 
-const ServerCard = ({ server }: ServerCardProps) => {
+const ServerCard = ({ server, onViewConfiguration }: ServerCardProps) => {
   const { toggleServer, deleteServer } = useServers();
 
   const getStatusColor = (status: string) => {
@@ -58,6 +59,12 @@ const ServerCard = ({ server }: ServerCardProps) => {
   const handleDelete = () => {
     if (confirm(`Are you sure you want to delete ${server.name}?`)) {
       deleteServer(server.id);
+    }
+  };
+
+  const handleViewConfig = () => {
+    if (onViewConfiguration) {
+      onViewConfiguration(server);
     }
   };
 
@@ -125,6 +132,15 @@ const ServerCard = ({ server }: ServerCardProps) => {
                 <ExternalLink className="h-4 w-4" />
               </Button>
             )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-cyber-secondary text-cyber-secondary hover:bg-cyber-secondary/20"
+              onClick={handleViewConfig}
+            >
+              <FileText className="h-4 w-4" />
+            </Button>
 
             <Button
               variant="outline"

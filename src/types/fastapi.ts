@@ -9,6 +9,7 @@ export interface Endpoint {
 export interface FastAPIConfig {
   name: string;
   description: string;
+  port: number;
   endpoints: Endpoint[];
   database: {
     enabled: boolean;

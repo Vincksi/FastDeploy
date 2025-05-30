@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -15,7 +14,7 @@ export const useConfigurationFiles = () => {
   const { toast } = useToast();
 
   const generateConfigFiles = (config: any): ConfigFile[] => {
-    const { name, description, endpoints, middleware, database } = config;
+    const { name, description, port = 8000, endpoints, middleware, database } = config;
 
     // Generate main.py
     const mainPy = `
@@ -50,7 +49,7 @@ def health_check():
 ${generateEndpoints(endpoints || [])}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=${port})
 `.trim();
 
     // Generate requirements.txt
@@ -73,9 +72,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 8000
+EXPOSE ${port}
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "${port}"]
 `.trim();
 
     const gitignore = `

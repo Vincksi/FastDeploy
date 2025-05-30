@@ -39,7 +39,7 @@ export const useFastAPIGeneration = (onGenerated: () => void) => {
         .insert({
           name: config.name,
           description: config.description,
-          port: 8000,
+          port: config.port,
           status: 'creating',
           user_id: user.id
         })

@@ -18,6 +18,7 @@ const FastAPIGenerator = ({ onGenerated }: FastAPIGeneratorProps) => {
   const [config, setConfig] = useState<FastAPIConfig>({
     name: '',
     description: '',
+    port: 8000,
     endpoints: [
       { id: '1', path: '/items', method: 'GET', description: 'Get all items' },
       { id: '2', path: '/items', method: 'POST', description: 'Create new item' }

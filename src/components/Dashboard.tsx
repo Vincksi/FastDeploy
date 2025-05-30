@@ -65,6 +65,7 @@ const Dashboard = () => {
     const exampleConfig = {
       name: server.name,
       description: server.description || 'Auto-generated FastAPI server',
+      port: server.port,
       endpoints: [
         { id: '1', path: '/items', method: 'GET', description: 'Get all items' },
         { id: '2', path: '/items', method: 'POST', description: 'Create new item' }
@@ -352,20 +353,11 @@ const Dashboard = () => {
                 <div className="text-cyber-primary/70">No servers created yet. Click "Create New API" to get started!</div>
               ) : (
                 servers.map((server) => (
-                  <div key={server.id} className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <ServerCard server={server} />
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleViewConfiguration(server)}
-                      className="ml-4 cyber-button"
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      Config
-                    </Button>
-                  </div>
+                  <ServerCard 
+                    key={server.id} 
+                    server={server} 
+                    onViewConfiguration={handleViewConfiguration}
+                  />
                 ))
               )}
             </div>
