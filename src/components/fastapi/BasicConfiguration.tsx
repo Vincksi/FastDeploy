@@ -28,12 +28,15 @@ const BasicConfiguration = ({ config, setConfig }: BasicConfigurationProps) => {
           <Label htmlFor="port">Port</Label>
           <Input
             id="port"
-            type="number"
+            type="text"
             value={config.port}
-            onChange={(e) => setConfig(prev => ({ ...prev, port: parseInt(e.target.value) || 8000 }))}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '');
+              const port = value ? parseInt(value) : 8000;
+              setConfig(prev => ({ ...prev, port }));
+            }}
             placeholder="8000"
-            min="1"
-            max="65535"
+            className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
         </div>
         <div className="md:col-span-2">
