@@ -31,12 +31,22 @@ export const useCustomTemplates = () => {
 
       if (error) throw error;
       
-      setTemplates(data || []);
+      // Type the data properly
+      const typedTemplates: CustomTemplate[] = (data || []).map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        config: item.config as FastAPIConfig,
+        created_at: item.created_at,
+        updated_at: item.updated_at
+      }));
+      
+      setTemplates(typedTemplates);
     } catch (error) {
       console.error('Error fetching custom templates:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de charger les templates personnalisés",
+        title: "Error",
+        description: "Failed to load custom templates",
         variant: "destructive"
       });
     } finally {
@@ -50,8 +60,8 @@ export const useCustomTemplates = () => {
       
       if (userError || !user) {
         toast({
-          title: "Erreur",
-          description: "Vous devez être connecté pour sauvegarder un template",
+          title: "Error",
+          description: "You must be logged in to save a template",
           variant: "destructive"
         });
         return;
@@ -62,23 +72,23 @@ export const useCustomTemplates = () => {
         .insert({
           name,
           description,
-          config,
+          config: config as any, // Type assertion for JSONB
           user_id: user.id
         });
 
       if (error) throw error;
 
       toast({
-        title: "Succès",
-        description: "Template sauvegardé avec succès !",
+        title: "Success",
+        description: "Template saved successfully!",
       });
 
       fetchTemplates();
     } catch (error) {
       console.error('Error saving template:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de sauvegarder le template",
+        title: "Error",
+        description: "Failed to save template",
         variant: "destructive"
       });
     }
@@ -94,16 +104,16 @@ export const useCustomTemplates = () => {
       if (error) throw error;
 
       toast({
-        title: "Succès",
-        description: "Template supprimé avec succès !",
+        title: "Success",
+        description: "Template deleted successfully!",
       });
 
       fetchTemplates();
     } catch (error) {
       console.error('Error deleting template:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de supprimer le template",
+        title: "Error",
+        description: "Failed to delete template",
         variant: "destructive"
       });
     }

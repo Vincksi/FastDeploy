@@ -72,7 +72,7 @@ const QuickLaunchModal = ({ isOpen, onClose, onLaunched }: QuickLaunchModalProps
             <span>Quick Launch Server</span>
           </DialogTitle>
           <DialogDescription className="text-cyber-primary/70">
-            Lancez un serveur instantanément depuis un template, configuration personnalisée ou existante
+            Launch a server instantly from a template, custom configuration, or existing setup
           </DialogDescription>
         </DialogHeader>
 
@@ -93,7 +93,7 @@ const QuickLaunchModal = ({ isOpen, onClose, onLaunched }: QuickLaunchModalProps
               className={selectedTab === 'custom' ? 'cyber-button' : 'text-cyber-primary/70'}
             >
               <Upload className="h-4 w-4 mr-2" />
-              Personnalisés
+              Custom
             </Button>
             <Button
               variant={selectedTab === 'existing' ? 'default' : 'ghost'}
@@ -101,7 +101,7 @@ const QuickLaunchModal = ({ isOpen, onClose, onLaunched }: QuickLaunchModalProps
               className={selectedTab === 'existing' ? 'cyber-button' : 'text-cyber-primary/70'}
             >
               <Server className="h-4 w-4 mr-2" />
-              Configs Existantes
+              Existing Configs
             </Button>
           </div>
 
@@ -141,12 +141,12 @@ const QuickLaunchModal = ({ isOpen, onClose, onLaunched }: QuickLaunchModalProps
                       {isGenerating ? (
                         <>
                           <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                          Lancement...
+                          Launching...
                         </>
                       ) : (
                         <>
                           <Zap className="h-4 w-4 mr-2" />
-                          Lancer
+                          Launch
                         </>
                       )}
                     </Button>
@@ -166,7 +166,7 @@ const QuickLaunchModal = ({ isOpen, onClose, onLaunched }: QuickLaunchModalProps
             <div className="space-y-4">
               {servers.length === 0 ? (
                 <div className="text-center py-8 text-cyber-primary/70">
-                  Aucun serveur existant trouvé. Créez votre premier serveur pour utiliser cette fonctionnalité.
+                  No existing servers found. Create your first server to use this feature.
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -202,12 +202,12 @@ const QuickLaunchModal = ({ isOpen, onClose, onLaunched }: QuickLaunchModalProps
                           {isGenerating ? (
                             <>
                               <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                              Lancement...
+                              Launching...
                             </>
                           ) : (
                             <>
                               <Zap className="h-4 w-4 mr-2" />
-                              Lancer Copie
+                              Launch Copy
                             </>
                           )}
                         </Button>

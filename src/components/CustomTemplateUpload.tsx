@@ -32,8 +32,8 @@ const CustomTemplateUpload = ({ onTemplateSelect }: CustomTemplateUploadProps) =
         setConfigFile(file);
       } else {
         toast({
-          title: "Erreur",
-          description: "Veuillez sélectionner un fichier JSON valide",
+          title: "Error",
+          description: "Please select a valid JSON file",
           variant: "destructive"
         });
       }
@@ -43,8 +43,8 @@ const CustomTemplateUpload = ({ onTemplateSelect }: CustomTemplateUploadProps) =
   const handleUpload = async () => {
     if (!templateName.trim() || !configFile) {
       toast({
-        title: "Erreur",
-        description: "Veuillez remplir le nom et sélectionner un fichier",
+        title: "Error",
+        description: "Please fill in the name and select a file",
         variant: "destructive"
       });
       return;
@@ -59,8 +59,8 @@ const CustomTemplateUpload = ({ onTemplateSelect }: CustomTemplateUploadProps) =
       // Validate that the config has required fields
       if (!config.name || !config.port || !config.endpoints) {
         toast({
-          title: "Erreur",
-          description: "Le fichier JSON doit contenir name, port, et endpoints",
+          title: "Error",
+          description: "JSON file must contain name, port, and endpoints",
           variant: "destructive"
         });
         return;
@@ -76,8 +76,8 @@ const CustomTemplateUpload = ({ onTemplateSelect }: CustomTemplateUploadProps) =
     } catch (error) {
       console.error('Error parsing config file:', error);
       toast({
-        title: "Erreur",
-        description: "Fichier JSON invalide",
+        title: "Error",
+        description: "Invalid JSON file",
         variant: "destructive"
       });
     } finally {
@@ -92,47 +92,47 @@ const CustomTemplateUpload = ({ onTemplateSelect }: CustomTemplateUploadProps) =
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-cyber-primary">Templates Personnalisés</h3>
+        <h3 className="text-lg font-semibold text-cyber-primary">Custom Templates</h3>
         <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
           <DialogTrigger asChild>
             <Button className="cyber-button">
               <Upload className="h-4 w-4 mr-2" />
-              Ajouter Template
+              Add Template
             </Button>
           </DialogTrigger>
           <DialogContent className="glass-panel border-cyber-primary/30">
             <DialogHeader>
-              <DialogTitle className="text-cyber-primary">Upload Template Personnalisé</DialogTitle>
+              <DialogTitle className="text-cyber-primary">Upload Custom Template</DialogTitle>
               <DialogDescription className="text-cyber-primary/70">
-                Uploadez un fichier JSON contenant la configuration de votre template
+                Upload a JSON file containing your template configuration
               </DialogDescription>
             </DialogHeader>
             
             <div className="space-y-4">
               <div>
-                <Label htmlFor="template-name" className="text-cyber-primary">Nom du Template</Label>
+                <Label htmlFor="template-name" className="text-cyber-primary">Template Name</Label>
                 <Input
                   id="template-name"
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
-                  placeholder="Mon Template API"
+                  placeholder="My API Template"
                   className="glass-panel border-cyber-primary/30"
                 />
               </div>
               
               <div>
-                <Label htmlFor="template-description" className="text-cyber-primary">Description (optionnel)</Label>
+                <Label htmlFor="template-description" className="text-cyber-primary">Description (optional)</Label>
                 <Textarea
                   id="template-description"
                   value={templateDescription}
                   onChange={(e) => setTemplateDescription(e.target.value)}
-                  placeholder="Description de votre template"
+                  placeholder="Description of your template"
                   className="glass-panel border-cyber-primary/30"
                 />
               </div>
               
               <div>
-                <Label htmlFor="config-file" className="text-cyber-primary">Fichier de Configuration (JSON)</Label>
+                <Label htmlFor="config-file" className="text-cyber-primary">Configuration File (JSON)</Label>
                 <Input
                   id="config-file"
                   type="file"
@@ -142,7 +142,7 @@ const CustomTemplateUpload = ({ onTemplateSelect }: CustomTemplateUploadProps) =
                 />
                 {configFile && (
                   <p className="text-sm text-cyber-primary/70 mt-1">
-                    Fichier sélectionné: {configFile.name}
+                    Selected file: {configFile.name}
                   </p>
                 )}
               </div>
@@ -155,12 +155,12 @@ const CustomTemplateUpload = ({ onTemplateSelect }: CustomTemplateUploadProps) =
                 {uploading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                    Upload en cours...
+                    Uploading...
                   </>
                 ) : (
                   <>
                     <Upload className="h-4 w-4 mr-2" />
-                    Sauvegarder Template
+                    Save Template
                   </>
                 )}
               </Button>
@@ -170,12 +170,12 @@ const CustomTemplateUpload = ({ onTemplateSelect }: CustomTemplateUploadProps) =
       </div>
 
       {loading ? (
-        <div className="text-cyber-primary/70">Chargement des templates...</div>
+        <div className="text-cyber-primary/70">Loading templates...</div>
       ) : templates.length === 0 ? (
         <div className="text-center py-8 text-cyber-primary/70">
           <FileText className="h-12 w-12 mx-auto mb-4 text-cyber-primary/40" />
-          <p>Aucun template personnalisé trouvé.</p>
-          <p>Cliquez sur "Ajouter Template" pour commencer.</p>
+          <p>No custom templates found.</p>
+          <p>Click "Add Template" to get started.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -213,7 +213,7 @@ const CustomTemplateUpload = ({ onTemplateSelect }: CustomTemplateUploadProps) =
                   className="w-full cyber-button"
                 >
                   <FileText className="h-4 w-4 mr-2" />
-                  Utiliser ce Template
+                  Use This Template
                 </Button>
               </CardContent>
             </Card>
