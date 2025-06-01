@@ -1,11 +1,14 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Server, Zap, Database, Shield, FileCode } from 'lucide-react';
+import { Server, Zap, Database, Shield, FileCode, Upload } from 'lucide-react';
 import { useFastAPIGeneration } from '@/hooks/useFastAPIGeneration';
 import { useServers } from '@/hooks/useServers';
+import CustomTemplateUpload from './CustomTemplateUpload';
+import { FastAPIConfig } from '@/types/fastapi';
 
 interface QuickLaunchModalProps {
   isOpen: boolean;
@@ -14,8 +17,8 @@ interface QuickLaunchModalProps {
 }
 
 const QuickLaunchModal = ({ isOpen, onClose, onLaunched }: QuickLaunchModalProps) => {
-  const [selectedTab, setSelectedTab] = useState<'templates' | 'existing'>('templates');
-  const { quickLaunchFromTemplate, quickLaunchFromExisting, isGenerating } = useFastAPIGeneration(() => {
+  const [selectedTab, setSelectedTab] = useState<'templates' | 'custom' | 'existing'>('templates');
+  const { quickLaunchFromTemplate, quickLaunchFromExisting, generateServer, isGenerating } = useFastAPIGeneration(() => {
     onLaunched();
     onClose();
   });
@@ -52,20 +55,24 @@ const QuickLaunchModal = ({ isOpen, onClose, onLaunched }: QuickLaunchModalProps
     quickLaunchFromTemplate(templateId);
   };
 
+  const handleCustomTemplateSelect = (config: FastAPIConfig) => {
+    generateServer(config);
+  };
+
   const handleExistingSelect = (serverId: string) => {
     quickLaunchFromExisting(serverId);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto glass-panel border-cyber-primary/30">
+      <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto glass-panel border-cyber-primary/30">
         <DialogHeader>
           <DialogTitle className="text-cyber-primary flex items-center space-x-2">
             <Zap className="h-5 w-5" />
             <span>Quick Launch Server</span>
           </DialogTitle>
           <DialogDescription className="text-cyber-primary/70">
-            Launch a server instantly from a template or existing configuration
+            Lancez un serveur instantanément depuis un template, configuration personnalisée ou existante
           </DialogDescription>
         </DialogHeader>
 
@@ -81,12 +88,20 @@ const QuickLaunchModal = ({ isOpen, onClose, onLaunched }: QuickLaunchModalProps
               Templates
             </Button>
             <Button
+              variant={selectedTab === 'custom' ? 'default' : 'ghost'}
+              onClick={() => setSelectedTab('custom')}
+              className={selectedTab === 'custom' ? 'cyber-button' : 'text-cyber-primary/70'}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Personnalisés
+            </Button>
+            <Button
               variant={selectedTab === 'existing' ? 'default' : 'ghost'}
               onClick={() => setSelectedTab('existing')}
               className={selectedTab === 'existing' ? 'cyber-button' : 'text-cyber-primary/70'}
             >
               <Server className="h-4 w-4 mr-2" />
-              Existing Configs
+              Configs Existantes
             </Button>
           </div>
 
@@ -126,12 +141,12 @@ const QuickLaunchModal = ({ isOpen, onClose, onLaunched }: QuickLaunchModalProps
                       {isGenerating ? (
                         <>
                           <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                          Launching...
+                          Lancement...
                         </>
                       ) : (
                         <>
                           <Zap className="h-4 w-4 mr-2" />
-                          Launch
+                          Lancer
                         </>
                       )}
                     </Button>
@@ -141,12 +156,17 @@ const QuickLaunchModal = ({ isOpen, onClose, onLaunched }: QuickLaunchModalProps
             </div>
           )}
 
+          {/* Custom Templates Tab */}
+          {selectedTab === 'custom' && (
+            <CustomTemplateUpload onTemplateSelect={handleCustomTemplateSelect} />
+          )}
+
           {/* Existing Configurations Tab */}
           {selectedTab === 'existing' && (
             <div className="space-y-4">
               {servers.length === 0 ? (
                 <div className="text-center py-8 text-cyber-primary/70">
-                  No existing servers found. Create your first server to use this feature.
+                  Aucun serveur existant trouvé. Créez votre premier serveur pour utiliser cette fonctionnalité.
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -182,12 +202,12 @@ const QuickLaunchModal = ({ isOpen, onClose, onLaunched }: QuickLaunchModalProps
                           {isGenerating ? (
                             <>
                               <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                              Launching...
+                              Lancement...
                             </>
                           ) : (
                             <>
                               <Zap className="h-4 w-4 mr-2" />
-                              Launch Copy
+                              Lancer Copie
                             </>
                           )}
                         </Button>
