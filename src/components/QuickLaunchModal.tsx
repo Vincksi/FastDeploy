@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Server, Zap, Database, Shield, FileCode, Upload } from 'lucide-react';
 import { useFastAPIGeneration } from '@/hooks/useFastAPIGeneration';
 import { useServers } from '@/hooks/useServers';
+import { useCustomTemplates } from '@/hooks/useCustomTemplates';
 import CustomTemplateUpload from './CustomTemplateUpload';
 import { FastAPIConfig } from '@/types/fastapi';
 
@@ -23,36 +23,42 @@ const QuickLaunchModal = ({ isOpen, onClose, onLaunched }: QuickLaunchModalProps
     onClose();
   });
   const { servers } = useServers();
+  const { templates, loading } = useCustomTemplates();
 
-  const templates = [
-    {
-      id: 'basic',
-      name: 'Basic API',
-      description: 'Simple FastAPI server with health check and info endpoints',
-      icon: <Server className="h-6 w-6 text-cyber-primary" />,
-      features: ['Health Check', 'Server Info', 'CORS Enabled'],
-      port: 8000
-    },
-    {
-      id: 'crud',
-      name: 'CRUD API',
-      description: 'Full CRUD operations with database integration',
-      icon: <Database className="h-6 w-6 text-cyber-secondary" />,
-      features: ['Create/Read/Update/Delete', 'SQLite Database', 'Data Validation'],
-      port: 8001
-    },
-    {
-      id: 'auth',
-      name: 'Auth API',
-      description: 'Authentication system with user management',
-      icon: <Shield className="h-6 w-6 text-cyber-tertiary" />,
-      features: ['User Registration', 'Login/Logout', 'Protected Routes'],
-      port: 8002
+  const getTemplateIcon = (templateName: string) => {
+    switch (templateName) {
+      case 'Basic API':
+        return <Server className="h-6 w-6 text-cyber-primary" />;
+      case 'CRUD API':
+        return <Database className="h-6 w-6 text-cyber-secondary" />;
+      case 'Auth API':
+        return <Shield className="h-6 w-6 text-cyber-tertiary" />;
+      default:
+        return <FileCode className="h-6 w-6 text-cyber-primary" />;
     }
-  ];
+  };
 
-  const handleTemplateSelect = (templateId: 'basic' | 'crud' | 'auth') => {
-    quickLaunchFromTemplate(templateId);
+  const getTemplateFeatures = (templateName: string) => {
+    switch (templateName) {
+      case 'Basic API':
+        return ['Health Check', 'Server Info', 'CORS Enabled'];
+      case 'CRUD API':
+        return ['Create/Read/Update/Delete', 'SQLite Database', 'Data Validation'];
+      case 'Auth API':
+        return ['User Registration', 'Login/Logout', 'Protected Routes'];
+      default:
+        return [];
+    }
+  };
+
+  const isPredefinedTemplate = (templateName: string) => {
+    return ['Basic API', 'CRUD API', 'Auth API'].includes(templateName);
+  };
+
+  const predefinedTemplates = templates.filter(template => isPredefinedTemplate(template.name));
+
+  const handleTemplateSelect = (template: any) => {
+    generateServer(template.config);
   };
 
   const handleCustomTemplateSelect = (config: FastAPIConfig) => {
@@ -107,52 +113,69 @@ const QuickLaunchModal = ({ isOpen, onClose, onLaunched }: QuickLaunchModalProps
 
           {/* Templates Tab */}
           {selectedTab === 'templates' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {templates.map((template) => (
-                <Card key={template.id} className="glass-panel border-cyber-primary/20 hover:border-cyber-primary/40 transition-all duration-300 cursor-pointer">
-                  <CardHeader className="text-center">
-                    <div className="flex justify-center mb-2">
-                      {template.icon}
-                    </div>
-                    <CardTitle className="text-cyber-primary">{template.name}</CardTitle>
-                    <CardDescription className="text-cyber-primary/70">
-                      {template.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="text-sm text-gray-400">Features:</div>
-                      <div className="flex flex-wrap gap-1">
-                        {template.features.map((feature, index) => (
-                          <Badge key={index} variant="outline" className="text-xs border-cyber-primary/30 text-cyber-primary/80">
-                            {feature}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="text-sm text-gray-400">
-                      Default Port: <span className="text-cyber-primary font-mono">{template.port}</span>
-                    </div>
-                    <Button
-                      onClick={() => handleTemplateSelect(template.id as 'basic' | 'crud' | 'auth')}
-                      disabled={isGenerating}
-                      className="w-full cyber-button"
-                    >
-                      {isGenerating ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                          Launching...
-                        </>
-                      ) : (
-                        <>
-                          <Zap className="h-4 w-4 mr-2" />
-                          Launch
-                        </>
-                      )}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+            <div>
+              {loading ? (
+                <div className="text-cyber-primary/70">Loading templates...</div>
+              ) : predefinedTemplates.length === 0 ? (
+                <div className="text-center py-8 text-cyber-primary/70">
+                  <FileCode className="h-12 w-12 mx-auto mb-4 text-cyber-primary/40" />
+                  <p>No templates found.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {predefinedTemplates.map((template) => (
+                    <Card key={template.id} className="glass-panel border-cyber-primary/20 hover:border-cyber-primary/40 transition-all duration-300 cursor-pointer">
+                      <CardHeader className="text-center">
+                        <div className="flex justify-center mb-2">
+                          {getTemplateIcon(template.name)}
+                        </div>
+                        <CardTitle className="text-cyber-primary">{template.name}</CardTitle>
+                        <CardDescription className="text-cyber-primary/70">
+                          {template.description}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <div className="text-sm text-gray-400">Features:</div>
+                          <div className="flex flex-wrap gap-1">
+                            {getTemplateFeatures(template.name).map((feature, index) => (
+                              <Badge key={index} variant="outline" className="text-xs border-cyber-primary/30 text-cyber-primary/80">
+                                {feature}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-400">
+                          Default Port: <span className="text-cyber-primary font-mono">{template.config.port}</span>
+                        </div>
+                        <div className="text-sm text-gray-400">
+                          Endpoints: <span className="text-cyber-primary">{template.config.endpoints?.length || 0}</span>
+                        </div>
+                        <div className="text-sm text-gray-400">
+                          Database: <span className="text-cyber-primary">{template.config.database?.enabled ? 'Enabled' : 'Disabled'}</span>
+                        </div>
+                        <Button
+                          onClick={() => handleTemplateSelect(template)}
+                          disabled={isGenerating}
+                          className="w-full cyber-button"
+                        >
+                          {isGenerating ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                              Launching...
+                            </>
+                          ) : (
+                            <>
+                              <Zap className="h-4 w-4 mr-2" />
+                              Launch
+                            </>
+                          )}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

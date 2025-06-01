@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Upload, FileText, Trash2, Star } from 'lucide-react';
+import { Upload, FileText, Trash2 } from 'lucide-react';
 import { useCustomTemplates } from '@/hooks/useCustomTemplates';
 import { FastAPIConfig } from '@/types/fastapi';
 import { useToast } from '@/hooks/use-toast';
@@ -94,6 +93,8 @@ const CustomTemplateUpload = ({ onTemplateSelect }: CustomTemplateUploadProps) =
     return ['Basic API', 'CRUD API', 'Auth API'].includes(templateName);
   };
 
+  const userTemplates = templates.filter(template => !isPredefinedTemplate(template.name));
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -176,111 +177,53 @@ const CustomTemplateUpload = ({ onTemplateSelect }: CustomTemplateUploadProps) =
 
       {loading ? (
         <div className="text-cyber-primary/70">Loading templates...</div>
-      ) : templates.length === 0 ? (
+      ) : userTemplates.length === 0 ? (
         <div className="text-center py-8 text-cyber-primary/70">
           <FileText className="h-12 w-12 mx-auto mb-4 text-cyber-primary/40" />
           <p>No custom templates found.</p>
           <p>Click "Add Template" to get started.</p>
         </div>
       ) : (
-        <div className="space-y-6">
-          {/* Predefined Templates Section */}
-          <div>
-            <h4 className="text-md font-medium text-cyber-primary mb-3 flex items-center">
-              <Star className="h-4 w-4 mr-2 text-yellow-400" />
-              Predefined Templates
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {templates.filter(template => isPredefinedTemplate(template.name)).map((template) => (
-                <Card key={template.id} className="glass-panel border-cyber-primary/20 hover:border-cyber-primary/40 transition-all duration-300">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <CardTitle className="text-cyber-primary">{template.name}</CardTitle>
-                        <Badge variant="outline" className="text-xs border-yellow-400/30 text-yellow-400">
-                          Predefined
-                        </Badge>
-                      </div>
-                    </div>
-                    {template.description && (
-                      <CardDescription className="text-cyber-primary/70">
-                        {template.description}
-                      </CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="text-sm">
-                      <span className="text-gray-400">Port: </span>
-                      <span className="text-cyber-primary font-mono">{template.config.port}</span>
-                    </div>
-                    <div className="text-sm">
-                      <span className="text-gray-400">Endpoints: </span>
-                      <span className="text-cyber-primary">{template.config.endpoints?.length || 0}</span>
-                    </div>
-                    <div className="text-sm">
-                      <span className="text-gray-400">Database: </span>
-                      <span className="text-cyber-primary">{template.config.database?.enabled ? 'Enabled' : 'Disabled'}</span>
-                    </div>
-                    <Button
-                      onClick={() => handleTemplateSelect(template)}
-                      className="w-full cyber-button"
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      Use This Template
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          {/* User Templates Section */}
-          {templates.filter(template => !isPredefinedTemplate(template.name)).length > 0 && (
-            <div>
-              <h4 className="text-md font-medium text-cyber-primary mb-3">Your Custom Templates</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {templates.filter(template => !isPredefinedTemplate(template.name)).map((template) => (
-                  <Card key={template.id} className="glass-panel border-cyber-primary/20 hover:border-cyber-primary/40 transition-all duration-300">
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-cyber-primary">{template.name}</CardTitle>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteTemplate(template.id)}
-                          className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      {template.description && (
-                        <CardDescription className="text-cyber-primary/70">
-                          {template.description}
-                        </CardDescription>
-                      )}
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="text-sm">
-                        <span className="text-gray-400">Port: </span>
-                        <span className="text-cyber-primary font-mono">{template.config.port}</span>
-                      </div>
-                      <div className="text-sm">
-                        <span className="text-gray-400">Endpoints: </span>
-                        <span className="text-cyber-primary">{template.config.endpoints?.length || 0}</span>
-                      </div>
-                      <Button
-                        onClick={() => handleTemplateSelect(template)}
-                        className="w-full cyber-button"
-                      >
-                        <FileText className="h-4 w-4 mr-2" />
-                        Use This Template
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {userTemplates.map((template) => (
+            <Card key={template.id} className="glass-panel border-cyber-primary/20 hover:border-cyber-primary/40 transition-all duration-300">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-cyber-primary">{template.name}</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => deleteTemplate(template.id)}
+                    className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                {template.description && (
+                  <CardDescription className="text-cyber-primary/70">
+                    {template.description}
+                  </CardDescription>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-sm">
+                  <span className="text-gray-400">Port: </span>
+                  <span className="text-cyber-primary font-mono">{template.config.port}</span>
+                </div>
+                <div className="text-sm">
+                  <span className="text-gray-400">Endpoints: </span>
+                  <span className="text-cyber-primary">{template.config.endpoints?.length || 0}</span>
+                </div>
+                <Button
+                  onClick={() => handleTemplateSelect(template)}
+                  className="w-full cyber-button"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Use This Template
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>
