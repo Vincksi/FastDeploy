@@ -31,12 +31,12 @@ export const useCustomTemplates = () => {
 
       if (error) throw error;
       
-      // Type the data properly
+      // Type the data properly with safe casting
       const typedTemplates: CustomTemplate[] = (data || []).map(item => ({
         id: item.id,
         name: item.name,
         description: item.description,
-        config: item.config as FastAPIConfig,
+        config: item.config as unknown as FastAPIConfig,
         created_at: item.created_at,
         updated_at: item.updated_at
       }));
